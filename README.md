@@ -10,7 +10,7 @@ This project is a **Repository Retrieval-Augmented Generation (RAG) system**. It
 
 ---
 
-## 🚀 Features
+## Features
 
 * **Scan Repos**: Automatically fetch all files from a repo and embed them for semantic search
 * **Query Repos**: Ask questions about the repo and get context-aware answers
@@ -22,7 +22,7 @@ This project is a **Repository Retrieval-Augmented Generation (RAG) system**. It
 
 ---
 
-## 📂 Project Structure
+## Project Structure
 
 ```
 RepoRAG_Structured/
@@ -49,7 +49,7 @@ RepoRAG_Structured/
 
 ---
 
-## ⚙️ Installation
+## Installation
 
 1. Clone the repo:
 
@@ -84,7 +84,7 @@ FIRESTORE_CREDENTIALS=path/to/your/service_account.json
 
 ---
 
-## ⚡ Running the App
+## Running the App
 
 ```bash
 uvicorn main:app --reload
@@ -95,7 +95,7 @@ uvicorn main:app --reload
 
 ---
 
-## 📝 Frontend Usage
+## Frontend Usage
 
 The **HTML frontend** allows you to:
 
@@ -115,7 +115,7 @@ The **HTML frontend** allows you to:
 
 ---
 
-## 🛠 Tech Stack
+## Tech Stack
 
 * **FastAPI** – Python web framework
 * **Pinecone** – Vector database for embeddings
