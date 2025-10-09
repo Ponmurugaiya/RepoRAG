@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Repo RAG Assistant</title>
+
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+
+<!-- Highlight.js for code syntax -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github-dark.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+
+<!-- Marked.js for Markdown rendering -->
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+<style>
+  body {
+    font-family: 'Inter', sans-serif;
+    background: #f7f9fc;
+    margin: 0;
+    padding: 0;
+  }
+  .container {
+    max-width: 900px;
+    margin: 40px auto;
+    padding: 0 20px;
+  }
+  h1 {
+    text-align: center;
+    color: #333;
+  }
+  .section {
+    background: #fff;
+    border-radius: 10px;
+    padding: 20px;
+    margin: 20px 0;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  }
+  input, textarea {
+    width: 100%;
+    padding: 10px;
+    margin: 8px 0;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    font-size: 1rem;
+  }
+  button {
+    background: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    margin-top: 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+  }
+  button:hover {
+    background: #0056b3;
+  }
+  .status {
+    font-weight: 600;
+    color: green;
+    margin-top: 10px;
+  }
+  .error {
+    font-weight: 600;
+    color: red;
+    margin-top: 10px;
+  }
+  pre {
+    background: #1e1e1e;
+    color: #dcdcdc;
+    padding: 15px;
+    overflow-x: auto;
+    border-radius: 6px;
+  }
+  code {
+    font-family: 'Courier New', monospace;
+  }
+  .spinner {
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    border: 3px solid rgba(0,0,0,0.2);
+    border-radius: 50%;
+    border-top-color: #007bff;
+    animation: spin 1s linear infinite;
+    margin-left: 10px;
+  }
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>Repo RAG Assistant</h1>
+
+  <div class="section">
+    <h2>Step 1: Scan Repository</h2>
+    <input type="text" id="repoUrl" placeholder="Paste GitHub repo URL (public)">
+    <button onclick="scanRepo()">Scan Repo</button>
+    <div id="scanResult"></div>
+  </div>
+
+  <div class="section">
+    <h2>Step 2: Ask a Question</h2>
+    <textarea id="question" rows="3" placeholder="Enter your question about the repo..."></textarea>
+    <button onclick="queryRepo()">Query Repo</button>
+    <div id="queryResult"></div>
+  </div>
+</div>
+
+<script>
+const API_BASE = "http://127.0.0.1:8000"; // Change to your deployed backend
+
+async function scanRepo() {
+  const repoUrl = document.getElementById("repoUrl").value.trim();
+  if (!repoUrl) return alert("Please enter a GitHub repo URL.");
+
+  const scanResult = document.getElementById("scanResult");
+  scanResult.innerHTML = `Scanning <span class="spinner"></span>`;
+
+  try {
+    const res = await fetch(`${API_BASE}/scan`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ repo_url: repoUrl })
+    });
+    const data = await res.json();
+
+    if (data.error) {
+      scanResult.innerHTML = `<span class="error">Error: ${data.error}</span>`;
+    } else {
+      let html = `<p class="status">Status: ${data.status}</p>`;
+      html += `<p>Namespace: ${data.namespace}</p>`;
+      html += `<p>Last commit: ${data.last_commit}</p>`;
+      if (data.status === "scanned") {
+        html += `<p>Files scanned: ${data.files_scanned}</p>
+                 <p>Vectors upserted: ${data.vectors_upserted}</p>`;
+      }
+      scanResult.innerHTML = html;
+    }
+  } catch (err) {
+    scanResult.innerHTML = `<span class="error">Error: ${err}</span>`;
+  }
+}
+
+async function queryRepo() {
+  const repoUrl = document.getElementById("repoUrl").value.trim();
+  const question = document.getElementById("question").value.trim();
+  if (!repoUrl || !question) return alert("Please enter both repo URL and question.");
+
+  const queryResult = document.getElementById("queryResult");
+  queryResult.innerHTML = `Fetching answer <span class="spinner"></span>`;
+
+  try {
+    const res = await fetch(`${API_BASE}/query`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ repo_url: repoUrl, question: question })
+    });
+    const data = await res.json();
+
+    if (data.error) {
+      queryResult.innerHTML = `<span class="error">Error: ${data.error}</span>`;
+    } else {
+      let html = `<h3>Question:</h3><p>${data.question}</p>`;
+      html += `<h3>Answer:</h3><div>${marked.parse(data.answer_markdown)}</div>`;
+      html += `<p>Top chunks used: ${data.top_chunks_used}</p>`;
+      queryResult.innerHTML = html;
+
+      // Highlight code blocks
+      document.querySelectorAll('#queryResult pre code').forEach((block) => {
+        hljs.highlightBlock(block);
+      });
+    }
+  } catch (err) {
+    queryResult.innerHTML = `<span class="error">Error: ${err}</span>`;
+  }
+}
+</script>
+</body>
+</html>
