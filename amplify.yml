@@ -3,12 +3,10 @@ frontend:
   phases:
     preBuild:
       commands:
-        - cd Frontend/reporag-frontend
-        - npm ci
+        - cd Frontend/reporag-frontend && npm ci
     build:
       commands:
-        - cd Frontend/reporag-frontend
-        - npm run build
+        - cd Frontend/reporag-frontend && npm run build
   artifacts:
     baseDirectory: Frontend/reporag-frontend/dist
     files:
