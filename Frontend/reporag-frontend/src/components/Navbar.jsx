@@ -8,12 +8,12 @@ export default function Navbar({ user, signOut }) {
   useEffect(() => {
     fetchUserAttributes()
       .then((attrs) => {
-        // attrs contains email, name, sub, etc.
+        console.log('fetchUserAttributes result:', JSON.stringify(attrs, null, 2))
         const name = attrs.name || attrs.email || user?.username || 'User'
         setDisplayName(name)
       })
-      .catch(() => {
-        // fallback to username if fetch fails
+      .catch((err) => {
+        console.log('fetchUserAttributes error:', err)
         setDisplayName(user?.username || 'User')
       })
   }, [user])
