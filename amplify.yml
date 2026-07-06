@@ -3,19 +3,14 @@ frontend:
   phases:
     preBuild:
       commands:
-        - cd Frontend/reporag-frontend && npm ci
+        - npm ci
     build:
       commands:
-        - cd Frontend/reporag-frontend && npm run build
+        - npm run build
   artifacts:
-    baseDirectory: Frontend/reporag-frontend/dist
+    baseDirectory: dist
     files:
       - '**/*'
   cache:
     paths:
-      - Frontend/reporag-frontend/node_modules/**/*
-  customHeaders:
-    - pattern: '**/*'
-      headers:
-        - key: 'Cache-Control'
-          value: 'no-cache'
+      - node_modules/**/*
