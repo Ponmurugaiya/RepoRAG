@@ -17,6 +17,6 @@ resolve_s3          = true          # SAM auto-creates the S3 bucket — no manu
 parameter_overrides = [
     "PineconeApiKey=pcsk_6FnfSW_KqknoPjJqYJgz54CFYh3ALgyAN1exKPudKgvHK7ou4ehqR7NzT1qqAXrpvcdsPG",
     "GeminiApiKey=AIzaSyAJq3VGc0cBqPMW9971TOEPecOILVIdXf8",
-    "FrontendOrigin=http://localhost:5173",
+    "FrontendOrigin=http://localhost:5173,https://main.d1ahquphlexn78.amplifyapp.com",
     "BedrockRegion=us-east-1",
 ]
