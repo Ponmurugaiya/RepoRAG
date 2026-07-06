@@ -1,6 +1,9 @@
 import styles from './Navbar.module.css'
 
 export default function Navbar({ user, signOut }) {
+  // Debug: log full user object to find where name/email lives in Amplify v6
+  console.log('Cognito user object:', JSON.stringify(user, null, 2))
+
   // For Google sign-in, name/email come from user.attributes
   // For email/password sign-in, loginId holds the email
   const displayName =
