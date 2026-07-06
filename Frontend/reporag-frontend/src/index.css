@@ -1,0 +1,46 @@
+/* ─── Design tokens ─────────────────────────────────────── */
+:root {
+  --bg:           #f7f9fc;
+  --surface:      #ffffff;
+  --border:       #e2e8f0;
+  --accent:       #2563eb;
+  --accent-hover: #1d4ed8;
+  --error:        #dc2626;
+  --text-primary: #1e293b;
+  --text-muted:   #64748b;
+  --shadow:       0 2px 12px rgba(0, 0, 0, 0.06);
+}
+
+/* ─── Reset ─────────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ─── Amplify Authenticator overrides ───────────────────── */
+/* Centre the login card and give it breathing room */
+[data-amplify-authenticator] {
+  --amplify-components-authenticator-router-box-shadow: var(--shadow);
+  --amplify-components-authenticator-router-border-width: 0;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg);
+}
+
+[data-amplify-authenticator] [data-amplify-router] {
+  border-radius: 12px;
+  overflow: hidden;
+}

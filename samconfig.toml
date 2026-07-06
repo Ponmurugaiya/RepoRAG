@@ -1,0 +1,22 @@
+version = 0.1
+
+[default.global.parameters]
+stack_name = "reporag-backend"
+
+[default.build.parameters]
+cached = true
+parallel = true
+
+[default.deploy.parameters]
+stack_name          = "reporag-backend"
+s3_prefix           = "reporag-backend"
+region              = "ap-south-1"
+capabilities        = "CAPABILITY_IAM"
+confirm_changeset   = false
+resolve_s3          = true          # SAM auto-creates the S3 bucket — no manual step needed
+parameter_overrides = [
+    "PineconeApiKey=pcsk_6FnfSW_KqknoPjJqYJgz54CFYh3ALgyAN1exKPudKgvHK7ou4ehqR7NzT1qqAXrpvcdsPG",
+    "GeminiApiKey=AIzaSyAJq3VGc0cBqPMW9971TOEPecOILVIdXf8",
+    "FrontendOrigin=http://localhost:5173",
+    "BedrockRegion=us-east-1",
+]

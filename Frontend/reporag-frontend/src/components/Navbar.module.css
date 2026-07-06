@@ -1,0 +1,71 @@
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  height: 56px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.logo {
+  font-size: 1.4rem;
+  color: var(--accent);
+}
+
+.title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.tagline {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  display: none;
+}
+
+@media (min-width: 480px) {
+  .tagline { display: inline; }
+}
+
+.userArea {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.email {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.signOutBtn {
+  padding: 6px 14px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.signOutBtn:hover {
+  background: #f1f5f9;
+}

@@ -1,0 +1,117 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: RepoRAG Backend — FastAPI on Lambda + HTTP API Gateway
+
+# ── Parameters (override at deploy time with --parameter-overrides) ─────────
+Parameters:
+  PineconeApiKey:
+    Type: String
+    NoEcho: true
+  GeminiApiKey:
+    Type: String
+    NoEcho: true
+  FrontendOrigin:
+    Type: String
+    Default: "http://localhost:5173"
+    Description: "Comma-separated list of allowed CORS origins (your CloudFront/Amplify URL)"
+  BedrockRegion:
+    Type: String
+    Default: "us-east-1"
+    Description: "Region for Bedrock Titan Embeddings (must support amazon.titan-embed-text-v2)"
+
+# ── Globals ──────────────────────────────────────────────────────────────────
+Globals:
+  Function:
+    Runtime: python3.10
+    Timeout: 900          # 15 min max — scan on large repos can be slow
+    MemorySize: 512
+    Environment:
+      Variables:
+        PINECONE_API_KEY: !Ref PineconeApiKey
+        GEMINI_API_KEY:   !Ref GeminiApiKey
+        FRONTEND_ORIGIN:  !Ref FrontendOrigin
+        AWS_REGION_NAME:  !Ref AWS::Region
+        DYNAMO_TABLE_NAME: !Ref RepoRAGTable
+        BEDROCK_REGION:   !Ref BedrockRegion
+
+# ── Resources ────────────────────────────────────────────────────────────────
+Resources:
+
+  # ── DynamoDB table ──────────────────────────────────────────────────────────
+  RepoRAGTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: RepoRAGRepos
+      BillingMode: PAY_PER_REQUEST      # on-demand, no capacity planning needed
+      AttributeDefinitions:
+        - AttributeName: repo_id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: repo_id
+          KeyType: HASH
+
+  # ── Lambda function ─────────────────────────────────────────────────────────
+  RepoRAGFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: reporag-backend
+      CodeUri: .                        # SAM packages everything in this directory
+      Handler: main.handler             # module.attribute — Mangum handler in main.py
+      Description: "RepoRAG FastAPI backend"
+      Policies:
+        # DynamoDB read/write on our table
+        - DynamoDBCrudPolicy:
+            TableName: !Ref RepoRAGTable
+        # Bedrock — invoke Titan Embed V2 (cross-region: us-east-1)
+        - Statement:
+            - Effect: Allow
+              Action:
+                - bedrock:InvokeModel
+              Resource:
+                - !Sub "arn:aws:bedrock:${BedrockRegion}::foundation-model/amazon.titan-embed-text-v2:0"
+      Events:
+        # Catch-all proxy — API Gateway forwards every route to Lambda
+        ApiProxy:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref RepoRAGApi
+            Method: ANY
+            Path: /{proxy+}
+        # Root path
+        ApiRoot:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref RepoRAGApi
+            Method: ANY
+            Path: /
+
+  # ── HTTP API Gateway ─────────────────────────────────────────────────────────
+  RepoRAGApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      StageName: prod
+      CorsConfiguration:
+        AllowOrigins:
+          - !Ref FrontendOrigin
+        AllowMethods:
+          - GET
+          - POST
+          - OPTIONS
+        AllowHeaders:
+          - Authorization
+          - Content-Type
+        MaxAge: 600
+
+# ── Outputs ──────────────────────────────────────────────────────────────────
+Outputs:
+  ApiBaseUrl:
+    Description: "Paste this into VITE_API_BASE_URL in the frontend .env"
+    Value: !Sub "https://${RepoRAGApi}.execute-api.${AWS::Region}.amazonaws.com/prod"
+
+  LambdaFunctionArn:
+    Description: "Lambda function ARN"
+    Value: !GetAtt RepoRAGFunction.Arn
+
+  DynamoTableName:
+    Description: "DynamoDB table name"
+    Value: !Ref RepoRAGTable

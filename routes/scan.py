@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 from models.request_models import ScanRequest
-from services import github_service, pinecone_service, firestore_service, embedding_service
+from services import github_service, pinecone_service, dynamodb_service, embedding_service
 from utils.text_utils import sanitize_name, chunk_text
 import time
 
@@ -14,10 +14,9 @@ def scan_repo(req: ScanRequest):
         namespace = sanitize_name(str(repo_id))
         print(f"[SCAN] Scanning repo: {full_name}, branch: {branch}, namespace: {namespace}")
 
-        # ------------------ Firestore Check ------------------
-        doc_ref = firestore_service.get_repo_doc(repo_id)
-        doc = doc_ref.get()
-        last_commit = doc.to_dict().get("last_commit") if doc.exists else None
+        # ------------------ DynamoDB Check ------------------
+        item = dynamodb_service.get_repo_item(repo_id)
+        last_commit = item.get("last_commit") if item else None
         new_commit = github_service.get_commit_sha(full_name, branch)
 
         if last_commit == new_commit:
@@ -50,9 +49,9 @@ def scan_repo(req: ScanRequest):
         else:
             print("[SCAN] Warning: No vectors to upsert. Repo may be empty or file types not supported.")
 
-        # ------------------ Update Firestore ------------------
-        firestore_service.update_repo_commit(repo_id, full_name, new_commit)
-        print(f"[SCAN] Firestore updated with commit {new_commit}")
+        # ------------------ Update DynamoDB ------------------
+        dynamodb_service.update_repo_commit(repo_id, full_name, new_commit)
+        print(f"[SCAN] DynamoDB updated with commit {new_commit}")
 
         return {
             "status": "scanned",

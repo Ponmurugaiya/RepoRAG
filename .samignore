@@ -1,0 +1,12 @@
+# SAM ignores these when packaging the Lambda zip
+venv/
+.venv/
+Frontend/
+__pycache__/
+*.pyc
+*.pyo
+.env
+.git/
+.gitignore
+*.json.bak
+ask-ez-repo-firebase-adminsdk-fbsvc-509408e933.json
