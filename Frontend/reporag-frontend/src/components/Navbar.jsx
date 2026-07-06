@@ -1,17 +1,22 @@
+import { useEffect, useState } from 'react'
+import { fetchUserAttributes } from 'aws-amplify/auth'
 import styles from './Navbar.module.css'
 
 export default function Navbar({ user, signOut }) {
-  // Debug: log full user object to find where name/email lives in Amplify v6
-  console.log('Cognito user object:', JSON.stringify(user, null, 2))
+  const [displayName, setDisplayName] = useState(user?.username || 'User')
 
-  // For Google sign-in, name/email come from user.attributes
-  // For email/password sign-in, loginId holds the email
-  const displayName =
-    user?.attributes?.name ||
-    user?.attributes?.email ||
-    user?.signInDetails?.loginId ||
-    user?.username ||
-    'User'
+  useEffect(() => {
+    fetchUserAttributes()
+      .then((attrs) => {
+        // attrs contains email, name, sub, etc.
+        const name = attrs.name || attrs.email || user?.username || 'User'
+        setDisplayName(name)
+      })
+      .catch(() => {
+        // fallback to username if fetch fails
+        setDisplayName(user?.username || 'User')
+      })
+  }, [user])
 
   return (
     <header className={styles.navbar}>
