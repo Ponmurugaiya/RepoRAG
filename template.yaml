@@ -90,9 +90,12 @@ Resources:
     Type: AWS::Serverless::HttpApi
     Properties:
       StageName: prod
+      # CORS is handled by FastAPI middleware in main.py which supports
+      # comma-separated multiple origins via FRONTEND_ORIGIN env var.
+      # API Gateway uses wildcard so Lambda responses include the headers.
       CorsConfiguration:
         AllowOrigins:
-          - !Ref FrontendOrigin
+          - "*"
         AllowMethods:
           - GET
           - POST
