@@ -14,10 +14,6 @@ Parameters:
     Type: String
     Default: "http://localhost:5173"
     Description: "Comma-separated list of allowed CORS origins (your CloudFront/Amplify URL)"
-  BedrockRegion:
-    Type: String
-    Default: "us-east-1"
-    Description: "Region for Bedrock Titan Embeddings (must support amazon.titan-embed-text-v2)"
 
 # ── Globals ──────────────────────────────────────────────────────────────────
 Globals:
@@ -32,7 +28,6 @@ Globals:
         FRONTEND_ORIGIN:  !Ref FrontendOrigin
         AWS_REGION_NAME:  !Ref AWS::Region
         DYNAMO_TABLE_NAME: !Ref RepoRAGTable
-        BEDROCK_REGION:   !Ref BedrockRegion
 
 # ── Resources ────────────────────────────────────────────────────────────────
 Resources:
@@ -62,12 +57,6 @@ Resources:
         # DynamoDB read/write on our table
         - DynamoDBCrudPolicy:
             TableName: !Ref RepoRAGTable
-        # Bedrock — invoke Titan Embed V2 (cross-region: us-east-1)
-        - Statement:
-            - Effect: Allow
-              Action:
-                - bedrock:InvokeModel
-              Resource: "*"
       Events:
         # Catch-all proxy — API Gateway forwards every route to Lambda
         ApiProxy:

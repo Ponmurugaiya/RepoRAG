@@ -1,34 +1,23 @@
-import json
-import boto3
-from config import BEDROCK_REGION
+from pinecone import Pinecone
+from config import PINECONE_API_KEY
 
-# Bedrock client — reused across Lambda invocations (module-level init)
-_bedrock = boto3.client("bedrock-runtime", region_name=BEDROCK_REGION)
+# Pinecone client — reused across Lambda invocations
+pc = Pinecone(api_key=PINECONE_API_KEY)
 
-# Model produces 1024-dim vectors by default, but supports 256 / 512 / 1024.
-# We use 384 to match the existing Pinecone index (all-MiniLM-L6-v2 dimension).
-_MODEL_ID = "amazon.titan-embed-text-v2:0"
+# Use Pinecone's inference API for embeddings — no Bedrock/external model needed.
+# llama-text-embed-v2 supports flexible dimensions; we use 384 to match the index.
+_MODEL = "llama-text-embed-v2"
 _DIMENSIONS = 384
 
 
 def embed_text(text: str) -> list:
     """
-    Embed a single string using Amazon Titan Text Embeddings V2.
+    Embed a single string using Pinecone's llama-text-embed-v2 model.
     Returns a list of floats with length _DIMENSIONS (384).
-    Drop-in replacement for the previous SentenceTransformer call.
     """
-    body = json.dumps({
-        "inputText": text,
-        "dimensions": _DIMENSIONS,
-        "normalize": True,       # unit-normalise for cosine similarity
-    })
-
-    response = _bedrock.invoke_model(
-        modelId=_MODEL_ID,
-        body=body,
-        contentType="application/json",
-        accept="application/json",
+    response = pc.inference.embed(
+        model=_MODEL,
+        inputs=[text],
+        parameters={"input_type": "passage", "truncate": "END", "dimension": _DIMENSIONS},
     )
-
-    result = json.loads(response["body"].read())
-    return result["embedding"]
+    return response[0].values
